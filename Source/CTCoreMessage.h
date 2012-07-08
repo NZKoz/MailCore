@@ -168,6 +168,15 @@
 - (NSString *)messageId;
 
 /*!
+ sets the in reply to Id
+ */
+-(void) setInReplyTo:(NSString *) messageId;
+
+-(void) setReferences:(NSString *)messageId;
+
+-(void) setValue:(NSString *)value forMIMEHeaderField:(NSString *) headerName;
+
+/*!
     @abstract	Returns an NSString containing the messages UID.
 */
 - (NSString *)uid;

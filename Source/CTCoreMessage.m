@@ -63,7 +63,9 @@ char * etpan_encode_mime_header(char * phrase)
 }
 */
 
-@implementation CTCoreMessage
+@implementation CTCoreMessage {
+    NSMutableDictionary *additionalMimeHeaders;
+}
 @synthesize mime=myParsedMIME;
 
 - (id)init {
@@ -72,6 +74,7 @@ char * etpan_encode_mime_header(char * phrase)
         struct mailimf_fields *fields = mailimf_fields_new_empty();
         myFields = mailimf_single_fields_new(fields);
         mailimf_fields_free(fields);
+        additionalMimeHeaders = [[NSMutableDictionary dictionary] retain];
     }
     return self;
 }
@@ -83,6 +86,8 @@ char * etpan_encode_mime_header(char * phrase)
         assert(message != NULL);
         myMessage = message;
         myFields = mailimf_single_fields_new(message->msg_fields);
+        additionalMimeHeaders = [[NSMutableDictionary dictionary] retain];
+
     }
     return self;
 }
@@ -112,6 +117,7 @@ char * etpan_encode_mime_header(char * phrase)
         mailimf_single_fields_free(myFields);
     }
     [myParsedMIME release];
+    [additionalMimeHeaders release];
     [super dealloc];
 }
 
@@ -440,6 +446,28 @@ char * etpan_encode_mime_header(char * phrase)
     return nil;
 }
 
+-(void) setInReplyTo:(NSString *)messageId {
+    if (myFields->fld_in_reply_to != NULL) {
+        mailimf_in_reply_to_free(myFields->fld_in_reply_to);
+    }
+    clist *inReplyToHeaderList = clist_new();
+    const char *cMessageId = [messageId cStringUsingEncoding:NSUTF8StringEncoding];
+    clist_append(inReplyToHeaderList, strdup(cMessageId));
+    myFields->fld_in_reply_to = mailimf_in_reply_to_new(inReplyToHeaderList);
+}
+
+-(void) setReferences:(NSString *)messageId {
+    if (myFields->fld_references != NULL) {
+        mailimf_references_free(myFields->fld_references);
+    }
+    clist *referencesList = clist_new();
+    const char *cMessageId = [messageId cStringUsingEncoding:NSUTF8StringEncoding];
+    clist_append(referencesList, strdup(cMessageId));
+    myFields->fld_in_reply_to = mailimf_in_reply_to_new(referencesList);
+}
+
+
+
 - (NSString *)uid {
     return [NSString stringWithCString:myMessage->msg_uid encoding:NSUTF8StringEncoding];
 }
@@ -557,6 +585,10 @@ char * etpan_encode_mime_header(char * phrase)
         myFields->fld_reply_to = mailimf_reply_to_new(imf);
 }
 
+-(void) setValue:(NSString *)value forMIMEHeaderField:(NSString *) headerName {
+    [additionalMimeHeaders setValue:value forKey:headerName];
+}
+
 
 - (NSString *)render {
     CTMIME *msgPart = myParsedMIME;
@@ -573,10 +605,21 @@ char * etpan_encode_mime_header(char * phrase)
         clist *inReplyTo = (myFields->fld_in_reply_to != NULL) ? (myFields->fld_in_reply_to->mid_list) : NULL;
         clist *references = (myFields->fld_references != NULL) ? (myFields->fld_references->mid_list) : NULL;
         char *subject = (myFields->fld_subject != NULL) ? (myFields->fld_subject->sbj_value) : NULL;
+        
 
+        
         //TODO uh oh, when this get freed it frees stuff in the CTCoreMessage
         //TODO Need to make sure that fields gets freed somewhere
         fields = mailimf_fields_new_with_data(from, sender, replyTo, to, cc, bcc, inReplyTo, references, subject);
+        if ([additionalMimeHeaders count] > 0) {
+            for (NSString *header in [additionalMimeHeaders keyEnumerator]) {
+                const char *cHeader = [header UTF8String];
+                const char *cValue  = [[additionalMimeHeaders objectForKey:header] UTF8String];
+                struct mailimf_field *optionalField = mailimf_field_new_custom(strdup(cHeader), strdup(cValue));
+                clist_append(fields->fld_list, optionalField);
+            }
+        }
+        
         [(CTMIME_MessagePart *)msgPart setIMFFields:fields];
     }
     return [myParsedMIME render];
