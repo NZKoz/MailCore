@@ -33,7 +33,6 @@
 
 #import <libetpan/libetpan.h>
 #import "MailCoreTypes.h"
-#import "NSString+Base64.h"
 
 @implementation CTMIME_HtmlPart
 
