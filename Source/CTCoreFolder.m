@@ -240,6 +240,52 @@ int imap_flags_to_flags(struct mailimap_msg_att_dynamic * att_dyn,
     return sequenceNumber;
 }
 
+- (NSSet *)setOfUnreadMessages {
+    int r;
+    struct mailimap_search_key * search_key;
+    clist * fetch_result;
+    // this is ridiculous, but it's the API apparently
+    search_key = mailimap_search_key_new(MAILIMAP_SEARCH_KEY_UNSEEN,
+                                         NULL, NULL, NULL, NULL, NULL,
+                                         NULL, NULL, NULL, NULL, NULL,
+                                         NULL, NULL, NULL, NULL, 0,
+                                         NULL, NULL, NULL, NULL, NULL,
+                                         NULL, 0, NULL, NULL, NULL);
+    if (search_key == NULL) {
+        return nil;
+    }
+
+    r = mailimap_uid_search([self imapSession], NULL, search_key, &fetch_result);
+
+    mailimap_search_key_free(search_key);
+
+    if (r != MAIL_NO_ERROR) {
+        NSException *exception = [NSException
+                                  exceptionWithName:CTUnknownError
+                                  reason:[NSString stringWithFormat:@"Error number: %d",r]
+                                  userInfo:nil];
+        [exception raise];
+    }
+
+    NSMutableSet *set = [NSMutableSet setWithCapacity:clist_count(fetch_result)];
+    clistiter *iter;
+    NSUInteger uidValidity = [self uidValidity];
+    NSString *strUid;
+    for(iter = clist_begin(fetch_result); iter != NULL; iter = clist_next(iter)) {
+        CTBareMessage *msg = [[CTBareMessage alloc] init];
+        uint32_t *uid = clist_content(iter);
+        strUid = [[NSString alloc] initWithFormat:@"%d-%d", uidValidity,
+               *uid];
+        msg.uid = strUid;
+        [strUid release];
+        [set addObject:msg];
+    }
+
+    mailimap_search_result_free(fetch_result);
+    return set;
+}
+
+
 - (NSSet *)messageListWithFetchAttributes:(NSArray *)attributes {
     int r;
     struct mailimap_fetch_att * fetch_att;

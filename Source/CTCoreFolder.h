@@ -86,6 +86,10 @@
 //TODO Attributes is ignore, fix me!
 - (NSSet *)messageListWithFetchAttributes:(NSArray *)attributes;
 
+// Returns an array of message representing the unread messages obtained via SEARCH
+- (NSSet *)setOfUnreadMessages;
+
+
 /*!
     @abstract	This validates the passed in UID. The server can at times change the set of UID's for a folder. So
                 you should verify that the server is still using the same set when connecting.
