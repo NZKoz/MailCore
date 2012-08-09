@@ -70,7 +70,8 @@
     Implementation is in alpha.
 */
 //TODO Document Me!
-- (NSSet *)messageObjectsFromIndex:(unsigned int)start toIndex:(unsigned int)end;
+- (NSSet *) messageObjectsFromIndex:(unsigned int)start toIndex:(unsigned int)end;
+- (NSSet *) messageObjectsWithUIDs:(NSSet *) uids;
 
 /*!
     @abstract	This will return the message from this folder with the UID that was passed in. If the message
@@ -87,7 +88,7 @@
 - (NSSet *)messageListWithFetchAttributes:(NSArray *)attributes;
 
 // Returns an array of message representing the unread messages obtained via SEARCH
-- (NSSet *)setOfUnreadMessages;
+- (NSSet *)uidsOfUnreadMessages;
 
 
 /*!
