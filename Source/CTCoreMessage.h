@@ -77,11 +77,6 @@
 */
 - (id)initWithString:(NSString *)msgData;
 
-/*
-    @abstract	Creates an empty message
-*/
-- (id)init;
-
 - (int)fetchBodyStructure;
 
 /*!
