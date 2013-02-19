@@ -503,24 +503,44 @@ int uid_list_to_env_list(clist * fetch_result, struct mailmessage_list ** result
 }
 
 
-- (NSSet *)uidsOfUnreadMessages {
+- (NSSet *)uidsOfUnreadMessagesSince:(NSDate *)date {
     int r;
-    struct mailimap_search_key * search_key;
+    struct mailimap_search_key * combination_key;
+    struct mailimap_search_key * unseen_key;
+    struct mailimap_search_key * since_key;
+    clist * criteria;
     clist * fetch_result;
     // this is ridiculous, but it's the API apparently
-    search_key = mailimap_search_key_new(MAILIMAP_SEARCH_KEY_UNSEEN,
+    unseen_key = mailimap_search_key_new(MAILIMAP_SEARCH_KEY_UNSEEN,
                                          NULL, NULL, NULL, NULL, NULL,
                                          NULL, NULL, NULL, NULL, NULL,
                                          NULL, NULL, NULL, NULL, 0,
                                          NULL, NULL, NULL, NULL, NULL,
                                          NULL, 0, NULL, NULL, NULL);
-    if (search_key == NULL) {
+    if (unseen_key == NULL) {
         return nil;
     }
+    criteria = clist_new();
+    clist_append(criteria, unseen_key);
+
     
-    r = mailimap_uid_search([self imapSession], NULL, search_key, &fetch_result);
+    // now the since key
+    if (date) {
+        NSDateComponents *components = [[NSCalendar currentCalendar] components:NSDayCalendarUnit | NSMonthCalendarUnit | NSYearCalendarUnit fromDate:date];
+        
+        since_key = mailimap_search_key_new_since(mailimap_date_new(components.day, components.month, components.year));
+        if (since_key == NULL) {
+            return nil;
+        }
+        clist_append(criteria, since_key);
+
+    }
     
-    mailimap_search_key_free(search_key);
+    combination_key = mailimap_search_key_new_multiple(criteria);
+    
+    r = mailimap_uid_search([self imapSession], NULL, combination_key, &fetch_result);
+    
+    mailimap_search_key_free(combination_key);
     
     if (r != MAIL_NO_ERROR) {
         self.lastError = MailCoreCreateErrorFromIMAPCode(r);

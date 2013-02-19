@@ -122,7 +122,7 @@
 /**
  Returns the list of UIDs of unread messages
  */
-- (NSSet *)uidsOfUnreadMessages;
+- (NSSet *)uidsOfUnreadMessagesSince:(NSDate *)date;
 
 
 /* fetches the messages with UIDs in the set
