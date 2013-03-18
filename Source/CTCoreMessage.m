@@ -350,6 +350,7 @@
             return nil;
 
         NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+        calendar.timeZone = [self senderTimeZone];
         NSDateComponents *comps = [[NSDateComponents alloc] init];
 
         [comps setYear:d->dt_year];
