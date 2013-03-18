@@ -689,6 +689,15 @@ int uid_list_to_env_list(clist * fetch_result, struct mailmessage_list ** result
     return YES;
 }
 
+-(BOOL) noop {
+    int err = mailsession_noop([self folderSession]);
+    if (err != MAIL_NO_ERROR) {
+        self.lastError = MailCoreCreateErrorFromIMAPCode(err);
+        return NO;
+    }
+    return YES;
+}
+
 - (BOOL)moveMessageWithUID:(NSUInteger)uid toPath:(NSString *)path {
     BOOL success = [self connect];
     if (!success) {

@@ -248,6 +248,8 @@
 */
 - (BOOL)totalMessageCount:(NSUInteger *)totalCount;
 
+- (BOOL) noop;
+
 /**
  Returns the uid validity value for the folder, which can be used to determine if the
  local cached UID's are still valid, or if the server has changed UID's
