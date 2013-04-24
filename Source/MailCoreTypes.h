@@ -36,14 +36,19 @@
 
 /** Constants for fetching messages **/
 
-typedef enum
-{
+typedef enum {
     CTFetchAttrDefaultsOnly     = 0,
     CTFetchAttrBodyStructure    = 1 << 0,
     CTFetchAttrEnvelope         = 1 << 1,
 } CTFetchAttributes;
 
 /** Connection Constants **/
+
+typedef enum {
+    CTSMTPConnectionTypePlain = 0,
+    CTSMTPConnectionTypeStartTLS,
+    CTSMTPConnectionTypeTLS
+} CTSMTPConnectionType;
 
 /* when the connection is plain text */
 #define CTConnectionTypePlain       CONNECTION_TYPE_PLAIN
