@@ -197,6 +197,12 @@
 - (BOOL) appendMessage: (CTCoreMessage *) msg;
 
 /**
+ Exposes the IMAP APPEND command, with flags. See the IMAP RFC 4549.
+ @return Return YES on success, NO on error. Call method lastError to get error if one occurred
+ */
+- (BOOL) appendMessage: (CTCoreMessage *) msg withFlags:(NSUInteger) flags;
+
+/**
  Retrieves the message flags. You must AND/OR using the defines constants.
  Here is a list of message flags:
  CTFlagNew, CTFlagSeen, CTFlagFlagged, CTFlagDeleted,
